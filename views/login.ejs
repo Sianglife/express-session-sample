@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Import jQuery -->
+    <script src="/javascripts/jquery-3.7.1.min.js"></script>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <p>Account: </p>
+    <input type="text" id="account" name="name" />
+    <br>
+    <p>Password: </p>
+    <input type="password" id="password" name="password" />
+    
+    <button id="btn_login">Login</button>
+  </body>
+  <script>
+    // Define login handler
+    function login() {
+      const name = $('#account').val();
+      const password = $('#password').val();
+      $.ajax({
+        type: 'POST',
+        url: '/auth/login',
+        data: {
+          name: name,
+          password: password,
+        },
+        success: (res)=> {
+          if (res.success) {
+            window.location.href = '/';
+          } else {
+            alert(res.message ?? 'Login failed. Please check your credentials.');
+            $('#btn_login').attr('disabled', false); // 重新啟用按鈕
+          }
+        },
+        error: (err) => {
+          console.error('Error:', err);
+          alert('An error occurred. Please try again later.');
+        }
+      });
+    }
+
+    // Add Event Listener
+    $(document).ready(()=>{
+      $('#btn_login').click((e) => {
+        e.preventDefault(); // 避免原本HTML預設的按鈕操作
+        $('#btn_login').attr('disabled', true); // 禁用按鈕
+        login(); 
+      });
+      $('#password').keypress((e) => {
+        if (e.which === 13) { // Enter的Keycode是13
+          e.preventDefault(); // 避免原本HTML預設的按鈕操作
+          login();
+        }
+      });
+    })
+  </script>
+</html>
