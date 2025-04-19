@@ -3,9 +3,14 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Import jQuery -->
   </head>
   <body>
     <h1><%= title %></h1>
+    <% if (admin) { %>
+    <a href="/manage/add">Add User </a> <br>
+    <% } %>
+    <a href="/manage/change_passwd">Change Password </a> <br>
     <a href="/auth/logout">Logout </a>
   </body>
 </html>
