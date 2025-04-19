@@ -3,9 +3,9 @@ var router = express.Router();
 
 // Root: /auth
 
+// MongoDB connection
 const { MongoClient } = require("mongodb");
 const uri = process.env.MONGODB;
-
 const client = new MongoClient(uri);
 
 router.get("/", (req, res, next) => {
@@ -33,12 +33,15 @@ router.post("/login", (req, res, next) => {
   }
 
   try {
+    client.connect();
     client
       .db("my_db")
       .collection("users")
-      .findOne({ name: name }, { projection: { _id: 0, name: 1, password: 1 } })
+      .findOne(
+        { name: name },
+        { projection: { _id: 0, name: 1, password: 1, rule: 1 } }
+      )
       .then((data) => {
-        console.log(data);
         if (!data) {
           return res.json({
             success: false,
@@ -51,7 +54,10 @@ router.post("/login", (req, res, next) => {
             message: "Invalid username or password",
           });
         }
-        req.session.user = data.name;
+        req.session.user = {
+          name: data.name,
+          rule: data.rule,
+        };
         res.json({
           success: true,
           message: "Login successful",
