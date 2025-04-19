@@ -6,10 +6,12 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var loginRouter = require("./routes/auth");
+var manageRouter = require("./routes/manage");
 
 var app = express();
 
@@ -23,6 +25,12 @@ app.use(
     name: "app-session", // optional
     saveUninitialized: false,
     resave: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB,
+      dbName: "my_db",
+      collectionName: "sessions",
+      ttl: 60 * 60 * 24 * 7, // 7 days
+    }),
   })
 );
 
@@ -35,6 +43,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/auth", loginRouter);
+app.use("/manage", manageRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
