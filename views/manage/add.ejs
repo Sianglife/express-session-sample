@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>新增帳號</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Import jQuery -->
+    <script src="/javascripts/jquery-3.7.1.min.js"></script>
+  </head>
+  <body>
+    <h1>新增帳號</h1>
+    <p>Welcome <%= name %></p>
+    <a href="/">回首頁</a><br />
+    <input type="text" id="username" placeholder="帳號" /><br />
+    <input type="password" id="password" placeholder="密碼" /><br />
+    <select id="rule">
+      <option value="0">一般使用者</option>
+      <option value="1">管理者</option>
+    </select>
+    <input type="button" id="btn_add" value="新增" /><br />
+  </body>
+  <script>
+    function send() {
+      const username = $('#username').val();
+      const password = $('#password').val();
+      console.log(1)
+      $.ajax({
+        type: 'POST',
+        url: '/manage/add',
+        data: {
+          username: username,
+          password: password,
+          rule: $('#rule').val()
+        },        
+        success: (res)=> {
+          if (res.success) {
+            console.log(2)
+            window.location.href = '/';
+          } else {
+            alert(res.message ?? 'Login failed. Please check your credentials.');
+            $('#btn_add').attr('disabled', false); // 重新啟用按鈕
+          }
+        },
+        error: (err) => {
+          console.error('Error:', err);
+          alert('An error occurred. Please try again later.');
+          $('#btn_add').attr('disabled', false); // 重新啟用按鈕
+        }
+      });
+    }
+
+    $(document).ready(()=>{
+      $('#btn_add').click((e) => {
+        e.preventDefault(); // 避免原本HTML預設的按鈕操作
+        $('#btn_add').attr('disabled', true); // 禁用按鈕
+        send(); 
+      });
+      $('#password').keypress((e) => {
+        if (e.which === 13) { // Enter的Keycode是13
+          e.preventDefault(); // 避免原本HTML預設的按鈕操作
+          send();
+        }
+      });
+    })
+    </script>
+</html>

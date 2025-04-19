@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>變更密碼</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Import jQuery -->
+    <script src="/javascripts/jquery-3.7.1.min.js"></script>
+  </head>
+  <body>
+    <h1>變更密碼</h1>
+    <p><%= title %></p> <br>
+    <a href="/">回首頁</a><br>
+    <input type="passworddcc" id="ori_passwd" placeholder="原密碼" /><br>
+    <input type="password" id="new_password" placeholder="新密碼" /><br>
+    <input type="password" id="new_password_confirm" placeholder="再次輸入新密碼" /><br>
+    <input type="button" id="btn_submit" value="送出" /><br>
+  </body>
+  <script>
+    function submit() {
+      const ori_passwd = $('#ori_passwd').val();
+      const new_password = $('#new_password').val();
+      const new_password_confirm = $('#new_password_confirm').val();
+
+      if (new_password !== new_password_confirm) {
+        alert('新密碼與確認密碼不一致！');
+        $('#btn_submit').attr('disabled', false); // 重新啟用按鈕
+        return;
+      }
+
+      $.ajax({
+        type: 'POST',
+        url: '/manage/add',
+        data: {
+          ori_password: ori_passwd,
+          new_password: new_password,
+        },        
+        success: (res)=> {
+          if (res.success) {
+            alert('password changed successfully! redirecting to login page...');
+            window.location.href = '/logout';
+          } else {
+            alert(res.message ?? 'Login failed. Please check your credentials.');
+            $('#btn_add').attr('disabled', false); // 重新啟用按鈕
+          }
+        },
+        error: (err) => {
+          console.error('Error:', err);
+          alert('An error occurred. Please try again later.');
+          $('#btn_add').attr('disabled', false); // 重新啟用按鈕
+        }
+      });
+    }
+
+    $(document).ready(()=>{
+      $('#btn_submit').click((e) => {
+        e.preventDefault(); // 避免原本HTML預設的按鈕操作
+        $('#btn_submit').attr('disabled', true); // 禁用按鈕
+        submit(); 
+      });
+      $('#password').keypress((e) => {
+        if (e.which === 13) { // Enter的Keycode是13
+          e.preventDefault(); // 避免原本HTML預設的按鈕操作
+          submit();
+        }
+      });
+    })
+    </script>
+</html>
