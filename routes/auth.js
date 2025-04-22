@@ -1,35 +1,36 @@
 var express = require("express");
 var router = express.Router();
 
-// Root: /auth
-
-// MongoDB connection
+const URI = process.env.MONGODB;
 const { MongoClient } = require("mongodb");
-const uri = process.env.MONGODB;
-const client = new MongoClient(uri);
+const { path } = require("../app");
+const client = new MongoClient(URI);
 
+//ROOT: /auth
+
+// path: /auth/
 router.get("/", (req, res, next) => {
   res.redirect("/auth/login");
 });
 
-/* GET login page. */
-router.get("/login", (req, res, next) => {
-  res.render("login");
+router.get("/logout", (req, res, next) => {
+  req.session.destroy();
+  res.redirect("/"); // path: /
 });
 
-router.get("/logout", (req, res, next) => {
-  req.session.user = null;
-  res.redirect("/");
+router.get("/login", (req, res, next) => {
+  res.render("login");
 });
 
 router.post("/login", (req, res, next) => {
   const name = req.body.name;
   const password = req.body.password;
 
-  console.log("Login attempt: ", name, password);
-  // validate username and password
-  if (!name || !password) {
-    return res.status(400).send("Username and password are required");
+  if (name || password) {
+    return res.json({
+      success: false,
+      message: "Invalid login data",
+    });
   }
 
   try {
@@ -37,34 +38,27 @@ router.post("/login", (req, res, next) => {
     client
       .db("my_db")
       .collection("users")
-      .findOne(
-        { name: name },
-        { projection: { _id: 0, name: 1, password: 1, rule: 1 } }
-      )
+      .findOne({ name: name })
       .then((data) => {
         if (!data) {
           return res.json({
             success: false,
-            message: "Invalid username or password",
+            message: "Invalid login data",
           });
         }
-        if (data.password !== password) {
+        if (data.password != password) {
           return res.json({
             success: false,
-            message: "Invalid username or password",
+            message: "Invalid login data",
           });
         }
         req.session.user = {
           name: data.name,
-          rule: data.rule,
         };
-        res.json({
-          success: true,
-          message: "Login successful",
-        });
+        res.json({ success: true });
       });
   } catch (e) {
-    console.error("Error logging in: ", e);
+    console.error(e);
     return res.status(500).send("Internal server error");
   }
 });
