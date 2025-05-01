@@ -3,7 +3,6 @@ var router = express.Router();
 
 const URI = process.env.MONGODB;
 const { MongoClient } = require("mongodb");
-const { path } = require("../app");
 const client = new MongoClient(URI);
 
 //ROOT: /auth
@@ -25,13 +24,6 @@ router.get("/login", (req, res, next) => {
 router.post("/login", (req, res, next) => {
   const name = req.body.name;
   const password = req.body.password;
-
-  if (name || password) {
-    return res.json({
-      success: false,
-      message: "Invalid login data",
-    });
-  }
 
   try {
     client.connect();

@@ -6,6 +6,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var session = require("express-session");
+var MongoDBStore = require("connect-mongodb-session")(session);
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -23,18 +24,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-app.use("/auth", authRouter);
-
 app.use(
   session({
     secret: "app-secret",
     name: "app-session",
     saveUninitialized: false,
     resave: true,
+    store: new MongoDBStore({
+      uri: process.env.MONGODB,
+      collection: "sessions",
+    }),
   })
 );
+
+app.use("/", indexRouter);
+app.use("/user", usersRouter);
+app.use("/auth", authRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
