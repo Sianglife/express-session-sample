@@ -1,4 +1,5 @@
 var express = require("express");
+var { check_session } = require("../middleware/auth");
 var fileUpload = require("express-fileupload");
 var router = express.Router();
 
@@ -32,5 +33,34 @@ router.post("/upload", async (req, res) => {
   }
 });
 
+router.get("/change_passwd", check_session, (req, res) => {
+  res.render("manage/change_passwd", {
+    title: `Welcome ${req.session.user.name}`,
+  });
+});
+
+router.post("/change_passwd", check_session, (req, res) => {
+  const username = req.session.user.name;
+  const old_password = req.body.old_password;
+  const new_password = req.body.new_password;
+
+  const collection = client.db("my_db").collection("users");
+  collection.findOne({ name: username }).then((data) => {
+    if (data.password !== old_password) {
+      return res.json({
+        success: false,
+        message: "Old password is incorrect",
+      });
+    }
+    collection.updateOne(
+      { name: username },
+      { $set: { password: new_password } }
+    );
+    return res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  });
+});
 
 module.exports = router;

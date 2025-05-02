@@ -1,5 +1,5 @@
 var express = require("express");
-const { check_session_admin, check_session } = require("../middleware/auth");
+const { check_session_admin } = require("../middleware/auth");
 var router = express.Router();
 
 // MongoDB connection
@@ -13,35 +13,6 @@ router.get("/add", check_session_admin, (req, res) => {
   res.render("manage/add", { name: req.session.user.name });
 });
 
-router.get("/change_passwd", check_session, (req, res) => {
-  res.render("manage/change_passwd", {
-    title: `Welcome ${req.session.user.name}`,
-  });
-});
-
-router.post("/change_passwd", check_session, (req, res) => {
-  const username = req.session.user.name;
-  const old_password = req.body.old_password;
-  const new_password = req.body.new_password;
-
-  const collection = client.db("my_db").collection("users");
-  collection.findOne({ name: username }).then((data) => {
-    if (data.password !== old_password) {
-      return res.json({
-        success: false,
-        message: "Old password is incorrect",
-      });
-    }
-    collection.updateOne(
-      { name: username },
-      { $set: { password: new_password } }
-    );
-    return res.json({
-      success: true,
-      message: "Password changed successfully",
-    });
-  });
-});
 
 router.post("/add", check_session_admin, (req, res) => {
   const admin = req.session.user.name;
